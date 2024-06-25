@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.0](https://github.com/rivet-gg/opengb-modules/compare/v0.1.1...v1.0.0) (2024-06-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* rename scripts get -> fetch ([#113](https://github.com/rivet-gg/opengb-modules/issues/113))
+
+### Features
+
+* **users:** optionally return `user` in `authenticate_token` ([01d9791](https://github.com/rivet-gg/opengb-modules/commit/01d9791b4a1955b373e7aef933b2ea67bf3ecf54))
+
+
+### Chores
+
+* rename scripts get -&gt; fetch ([#113](https://github.com/rivet-gg/opengb-modules/issues/113)) ([01d9791](https://github.com/rivet-gg/opengb-modules/commit/01d9791b4a1955b373e7aef933b2ea67bf3ecf54))
+* update `ctx.userConfig` -&gt; `ctx.config` ([#111](https://github.com/rivet-gg/opengb-modules/issues/111)) ([c9e0f72](https://github.com/rivet-gg/opengb-modules/commit/c9e0f72c950b267a654980de4fe0308495769a00))
+* update raw queries to use explicit schemas for OpenGB 0.2 ([#115](https://github.com/rivet-gg/opengb-modules/issues/115)) ([28f260f](https://github.com/rivet-gg/opengb-modules/commit/28f260f776111841da3240a286c2d0f1a36ed8f5))
+
 ## [0.1.1](https://github.com/rivet-gg/opengb-modules/compare/v0.1.0...v0.1.1) (2024-06-10)
 
 
