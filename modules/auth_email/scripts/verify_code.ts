@@ -1,9 +1,4 @@
-import { assertExists } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import {
-	RuntimeError,
-	ScriptContext,
-} from "../module.gen.ts";
-import { TokenWithSecret } from "../../tokens/utils/types.ts";
+import { RuntimeError, ScriptContext } from "../module.gen.ts";
 
 export interface Request {
 	verificationId: string;
@@ -11,7 +6,8 @@ export interface Request {
 }
 
 export interface Response {
-	token: TokenWithSecret;
+	email: string;
+	completedAt: Date;
 }
 
 export async function run(
@@ -22,10 +18,8 @@ export async function run(
 
 	const code = req.code.toUpperCase();
 
-	// Validate & mark as used
-	let userId: string | undefined;
-	await ctx.db.$transaction(async (tx) => {
-		const verification = await tx.emailPasswordlessVerification.update({
+	return await ctx.db.$transaction(async (tx) => {
+		const verification = await tx.verifications.update({
 			where: {
 				id: req.verificationId,
 			},
@@ -36,7 +30,6 @@ export async function run(
 			},
 			select: {
 				email: true,
-				userId: true,
 				code: true,
 				expireAt: true,
 				completedAt: true,
@@ -61,46 +54,26 @@ export async function run(
 			throw new RuntimeError("verification_code_expired");
 		}
 
+		const completedAt = new Date();
+
 		// Mark as used
-		const verificationConfirmation = await tx.emailPasswordlessVerification
+		const verificationConfirmation = await tx.verifications
 			.update({
 				where: {
 					id: req.verificationId,
 					completedAt: null,
 				},
 				data: {
-					completedAt: new Date(),
+					completedAt,
 				},
 			});
 		if (verificationConfirmation === null) {
 			throw new RuntimeError("verification_code_already_used");
 		}
 
-		// Get or create user
-		if (verification.userId) {
-			userId = verification.userId;
-		} else {
-			const { user } = await ctx.modules.users.create({});
-			userId = user.id;
-		}
-
-		// Create identity
-		await tx.emailPasswordless.upsert({
-			where: {
-				email: verification.email,
-				userId,
-			},
-			create: {
-				email: verification.email,
-				userId,
-			},
-			update: {},
-		});
+		return {
+			email: verificationConfirmation.email,
+			completedAt,
+		};
 	});
-	assertExists(userId);
-
-	// Create token
-	const { token } = await ctx.modules.users.createToken({ userId });
-
-	return { token };
 }
