@@ -1,6 +1,6 @@
 {
   "name": "Lobbies",
-  "description": "Lobby & player management.",
+  "description": "Lobby & player management. Create & join lobbies instantly.",
   "icon": "game-board",
   "tags": [
     "core", "multiplayer"
