@@ -17,35 +17,12 @@ export async function run(
 ): Promise<Response> {
 	await ctx.modules.rateLimit.throttlePublic({});
 
-	if (!ctx.config.email) throw new RuntimeError("provider_disabled");
-
-	// Check if the email is already associated with an identity
-	const existingIdentity = await ctx.db.emailPasswordless.findFirst({
-		where: { email: req.email },
-	});
-
-	// Fetch existing user if session token is provided
-	let userId: string | undefined = existingIdentity?.userId;
-
-	if (req.userToken) {
-		const authRes = await ctx.modules.users.authenticateToken({
-			userToken: req.userToken,
-		});
-
-		if (existingIdentity && existingIdentity.userId !== authRes.userId) {
-			throw new RuntimeError("email_already_used");
-		}
-
-		userId = authRes.userId;
-	}
-
 	// Create verification
 	const code = generateCode();
 	const maxAttemptCount = 3;
 	const expiration = 60 * 60 * 1000;
-	const verification = await ctx.db.emailPasswordlessVerification.create({
+	const verification = await ctx.db.verifications.create({
 		data: {
-			userId,
 			email: req.email,
 			code,
 			maxAttemptCount,
@@ -54,11 +31,13 @@ export async function run(
 		select: { id: true },
 	});
 
+
+	console.log(ctx.config);
 	// Send email
 	await ctx.modules.email.sendEmail({
 		from: {
-			email: ctx.config.email.fromEmail ?? "hello@test.com",
-			name: ctx.config.email.fromName ?? "Authentication Code",
+			email: ctx.config.fromEmail ?? "hello@test.com",
+			name: ctx.config.fromName ?? "Authentication Code",
 		},
 		to: [{ email: req.email }],
 		subject: "Your verification code",
